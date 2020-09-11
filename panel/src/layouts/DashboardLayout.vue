@@ -11,7 +11,7 @@
         @click="drawer = true"
       ></v-app-bar-nav-icon>
 
-      <v-toolbar-title>Anomalies</v-toolbar-title>
+      <v-toolbar-title>Rostrenen et moi</v-toolbar-title>
 
       <v-spacer></v-spacer>
 
