@@ -14,7 +14,7 @@ export default {
 
   metaInfo: {
     title: 'Panel d\'administration',
-    titleTemplate: 'Rostrenen Et Moi - %s'
+    titleTemplate: 'Rostrenen et moi - %s'
   },
 
   components: {
