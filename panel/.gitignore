@@ -22,3 +22,7 @@ ui-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Firebase
+.firebaserc
+.firebase/
