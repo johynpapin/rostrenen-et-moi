@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+		function emailVerified() {
+			return request.auth.token.email_verified
+		}
+
+		function isAuthenticated() {
+			return request.auth != null && emailVerified();
+		}
+
+		function user() {
+			let userId = request.auth.uid;
+			
+			return get(/databases/$(database)/documents/users/$(userId)).data;
+		}
+
+		function isAdmin() {
+			return isAuthenticated() && user().isAdmin;
+		}
+
+		function isOwner(userId) {
+			return userId == request.auth.uid;
+		}
+
+		match /users/{userId} {
+			allow get: if isAuthenticated() && isOwner(userId);
+			
+			allow list: if isAdmin();
+		}
+
+		function isValidAnomaly() {
+			let data = request.resource.data;
+
+			return data.size() == 4 &&
+				data.userId is string &&
+				data.userId == request.auth.uid &&
+				data.createdAt is timestamp &&
+				data.createdAt == request.time &&
+				data.anomalyType is map &&
+				data.anomalyType.size() == 2 &&
+				data.anomalyType.id is string &&
+				data.anomalyType.name is string &&
+				data.anomalyType.name == get(/databases/$(database)/documents/anomalyTypes/$(data.anomalyType.id)).data.name &&
+				data.description is string;
+		}
+
+		match /anomalies/{anomalyId} {
+			allow create: if isAuthenticated() && isValidAnomaly();
+			allow list: if isAuthenticated() && isOwner(resource.data.userId);
+		
+			allow list: if isAdmin();
+		}
+
+		match /anomalyTypes/{anomalyTypeId} {
+			allow list: if isAuthenticated();
+
+			allow delete: if isAdmin();
+		}
+
+		function isValidNotification() {
+			let data = request.resource.data;
+
+			return data.size() == 1 &&
+				data.email is string;
+		}
+
+		match /notifications/{notificationId} {
+			allow list: if isAdmin();
+			allow create: if isAdmin() && isValidNotification();
+			allow delete: if isAdmin();
+		}
+	}
+}
