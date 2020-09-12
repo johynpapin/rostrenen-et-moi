@@ -1,0 +1,42 @@
+update_fastlane
+
+default_platform(:android)
+
+platform :android do
+  desc 'Runs all the tests'
+  lane :test do
+    gradle(task: 'test')
+  end
+
+  desc 'Deploy a new internal version'
+  lane :internal do
+    # gradle(task: 'clean')
+    # gradle(
+    #   task: 'bundle',
+    #   build_type: 'Release'
+    # )
+    upload_to_play_store(
+      track: 'internal',
+      aab: 'build/app/outputs/bundle/release/app-release.aab',
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc 'Promote the last internal version to production'
+  lane :promote_prod do
+    versions = google_play_track_version_codes(track: "internal")
+    version_code = versions[0]
+
+    upload_to_play_store(
+      track: 'internal',
+      track_promote_to: 'production',
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      version_code: version_code
+    )
+  end
+end

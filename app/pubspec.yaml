@@ -3,7 +3,7 @@ description: A new Flutter project.
 
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -24,6 +24,12 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.8.0
 
 flutter:
   uses-material-design: true
+
+flutter_icons:
+  android: true
+  ios: false
+  image_path: "android/fastlane/metadata/android/fr-FR/images/icon.png"

@@ -1,0 +1,2 @@
+json_key_file("android/service-account-secret-file.json")
+package_name("bzh.rostrenen.rostrenen_et_moi")

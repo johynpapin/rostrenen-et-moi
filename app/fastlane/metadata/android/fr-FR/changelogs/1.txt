@@ -1,0 +1,1 @@
+Version de test pour mettre en place la signature d’application Google Play.
