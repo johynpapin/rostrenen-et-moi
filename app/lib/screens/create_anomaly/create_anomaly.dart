@@ -8,19 +8,93 @@ import 'package:image_picker/image_picker.dart';
 import 'package:rostrenen_et_moi/providers.dart';
 import 'package:rostrenen_et_moi/models/anomaly_type.dart';
 import 'dart:io';
+import 'package:uuid/uuid.dart';
+
+class _AnomalyImage extends StatelessWidget {
+  final File file;
+  String id;
+  StorageUploadTask uploadTask;
+
+  _AnomalyImage({this.file, this.id, storageReference}) {
+    this.uploadTask = storageReference.child(this.id).putFile(this.file);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<StorageTaskEvent>(
+      stream: this.uploadTask.events,
+      builder: (context, snapshot) {
+        var children = [
+          Container(
+            color: Colors.grey[200],
+            width: 75.0,
+            height: 100.0,
+          ),
+          Image.file(
+            this.file,
+            width: 75.0,
+            height: 100.0,
+            fit: BoxFit.cover,
+          ),
+        ];
+
+        if (!snapshot.hasData || this.uploadTask.isInProgress) {
+          children.add(Container(
+            width: 75.0,
+            height: 100.0,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withAlpha(0),
+                  Colors.black38,
+                  Colors.black54
+                ],
+              ),
+            ),
+            child: Center(
+              child: Theme(
+                data: Theme.of(context).copyWith(accentColor: Colors.white),
+                child: CircularProgressIndicator(
+                  backgroundColor: Colors.black12,
+                  value: snapshot.hasData
+                      ? snapshot.data.snapshot.bytesTransferred /
+                          snapshot.data.snapshot.totalByteCount
+                      : null,
+                ),
+              ),
+            ),
+          ));
+        }
+
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(10.0),
+          child: Stack(
+            children: children,
+          ),
+        );
+      },
+    );
+  }
+}
 
 class CreateAnomaly extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final formKey = useMemoized(() => GlobalKey<FormState>());
     final picker = useMemoized(() => ImagePicker());
+    final uuid = useMemoized(() => Uuid());
+
     final anomaliesCollection =
         useMemoized(() => FirebaseFirestore.instance.collection('anomalies'));
     final anomalyTypes = useProvider(Providers.anomalyTypesStream);
+
     final firebaseStorage = useMemoized(() => FirebaseStorage.instance);
+    final imagesUploadFolder = useMemoized(() => uuid.v4());
 
     final anomalyTypeId = useState<String>(null);
-    final anomalyImages = useState(List<File>());
+    final anomalyImages = useState(List<_AnomalyImage>());
     final anomalyDescription = useState('');
 
     Future getImage() async {
@@ -29,25 +103,33 @@ class CreateAnomaly extends HookWidget {
         return;
       }
 
+      final userId = context.read(Providers.userStream).data?.value.id;
+
       anomalyImages.value = List.from(anomalyImages.value)
-        ..add(File(pickedFile.path));
+        ..add(
+          _AnomalyImage(
+            file: File(pickedFile.path),
+            id: uuid.v4(),
+            storageReference: firebaseStorage
+                .ref()
+                .child('tmp')
+                .child(userId)
+                .child(imagesUploadFolder),
+          ),
+        );
     }
 
     Future<void> submit(BuildContext context) async {
-      final authService = context.read(Providers.authService);
+      final dataService = context.read(Providers.dataService);
 
-      await anomaliesCollection.add({
-        'userId': authService.currentUser.userId,
-        'createdAt': FieldValue.serverTimestamp(),
-        'anomalyType': {
-          'id': anomalyTypeId.value,
-          'name': anomalyTypes.data?.value
-              .firstWhere(
-                  (anomalyType) => anomalyType.id == anomalyTypeId.value)
-              .name,
-        },
-        'description': anomalyDescription.value,
-      });
+      final AnomalyType anomalyType = anomalyTypes.data?.value
+          .firstWhere((anomalyType) => anomalyType.id == anomalyTypeId.value);
+
+      await dataService.createAnomaly(
+        anomalyType: anomalyType,
+        description: anomalyDescription.value,
+        imagesUploadFolder: imagesUploadFolder,
+      );
 
       Navigator.of(context).pop({
         'message': 'L\'anomalie a bien été signalée.',
@@ -90,16 +172,7 @@ class CreateAnomaly extends HookWidget {
               direction: Axis.horizontal,
               runAlignment: WrapAlignment.start,
               children: <Widget>[
-                ...?anomalyImages.value?.map((image) {
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(10.0),
-                    child: Image.file(
-                      image,
-                      height: 100.0,
-                      fit: BoxFit.fitHeight,
-                    ),
-                  );
-                }).toList(),
+                ...?anomalyImages.value,
                 ButtonTheme(
                   minWidth: 75.0,
                   height: 100.0,

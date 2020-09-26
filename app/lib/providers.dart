@@ -17,7 +17,7 @@ class Providers {
   static final dataService = Provider<DataService>((ref) {
     final user = ref.watch(userStream).data?.value;
 
-    return DataService(userId: user?.userId);
+    return DataService(userId: user?.id);
   });
 
   static final anomaliesStream =

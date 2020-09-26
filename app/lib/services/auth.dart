@@ -11,7 +11,7 @@ class AuthService {
     }
 
     return User(
-      userId: user.uid,
+      id: user.uid,
       email: user.email,
     );
   }

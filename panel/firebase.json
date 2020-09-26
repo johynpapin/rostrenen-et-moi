@@ -4,9 +4,9 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-  	"predeploy": [
-  		"npm run build"
-  	],
+    "predeploy": [
+      "npm run build"
+    ],
     "public": "dist",
     "ignore": [
       "firebase.json",
@@ -28,19 +28,22 @@
   },
   "emulators": {
     "functions": {
-			"host": "0.0.0.0",
+      "host": "0.0.0.0",
       "port": 5001
     },
     "firestore": {
-			"host": "0.0.0.0",
+      "host": "0.0.0.0",
       "port": 8080
     },
     "hosting": {
       "port": 5000
     },
     "ui": {
-			"host": "0.0.0.0",
+      "host": "0.0.0.0",
       "enabled": true
     }
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }

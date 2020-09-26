@@ -39,4 +39,31 @@ class DataService {
         .snapshots()
         .map(_anomalyListFromSnapshot);
   }
+
+  Future<void> createAnomaly({
+    AnomalyType anomalyType,
+    String description,
+    String imagesUploadFolder,
+  }) async {
+    print({
+      'userId': this._userId,
+      'createdAt': FieldValue.serverTimestamp(),
+      'anomalyType': {
+        'id': anomalyType.id,
+        'name': anomalyType.name,
+      },
+      'description': description,
+      'imagesUploadFolder': imagesUploadFolder,
+    });
+    await _anomaliesCollection.add({
+      'userId': this._userId,
+      'createdAt': FieldValue.serverTimestamp(),
+      'anomalyType': {
+        'id': anomalyType.id,
+        'name': anomalyType.name,
+      },
+      'description': description,
+      'imagesUploadFolder': imagesUploadFolder,
+    });
+  }
 }

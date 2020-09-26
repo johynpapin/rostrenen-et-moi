@@ -32,7 +32,7 @@ service cloud.firestore {
 		function isValidAnomaly() {
 			let data = request.resource.data;
 
-			return data.size() == 4 &&
+			return data.size() == 5 &&
 				data.userId is string &&
 				data.userId == request.auth.uid &&
 				data.createdAt is timestamp &&
@@ -42,7 +42,8 @@ service cloud.firestore {
 				data.anomalyType.id is string &&
 				data.anomalyType.name is string &&
 				data.anomalyType.name == get(/databases/$(database)/documents/anomalyTypes/$(data.anomalyType.id)).data.name &&
-				data.description is string;
+				data.description is string &&
+				data.imagesUploadFolder is string;
 		}
 
 		match /anomalies/{anomalyId} {
