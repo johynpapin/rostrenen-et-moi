@@ -1,24 +1,8 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-
-    match /tmp/{userId}/{imagesUploadFolder}/{id} {
-      allow write: if isAuthenticated() &&
-        isOwner(userId) &&
-        request.resource.size < 5 * 1024 * 1024 &&
-        request.resource.contentType.matches('image/.*');
-    }
-
-    match /images/{userId}/{id} {
-      // TODO: only owner and admins
-      allow read: if isAuthenticated();
+    match /{allPaths=**} {
+      allow read, write: if request.auth!=null;
     }
   }
 }

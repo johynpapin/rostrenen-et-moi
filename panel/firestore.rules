@@ -45,6 +45,13 @@ service cloud.firestore {
 				data.description is string &&
 				data.imagesUploadFolder is string;
 		}
+		
+		function isValidAnomalyType() {
+			let data = request.resource.data;
+
+			return data.size() == 1 &&
+				data.name is string;
+		}
 
 		match /anomalies/{anomalyId} {
 			allow create: if isAuthenticated() && isValidAnomaly();
@@ -56,6 +63,8 @@ service cloud.firestore {
 		match /anomalyTypes/{anomalyTypeId} {
 			allow list: if isAuthenticated();
 
+			allow delete: if isAdmin();
+			allow create: if isAdmin() && isValidAnomalyType();
 			allow delete: if isAdmin();
 		}
 
