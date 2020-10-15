@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import {
   Switch,
   Route,
@@ -25,11 +25,13 @@ import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import CategoryIcon from '@material-ui/icons/Category';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import MenuIcon from '@material-ui/icons/Menu';
+import NotificationsIcon from '@material-ui/icons/Notifications';
 import IconButton from '@material-ui/core/IconButton';
 import Container from '@material-ui/core/Container';
 import { makeStyles } from '@material-ui/core/styles';
 import Anomalies from './Anomalies';
 import Types from './Types';
+import Notifications from './Notifications';
 
 const drawerWidth = 240;
 
@@ -171,6 +173,7 @@ function Dashboard() {
       <List>
         <ListItemLink to={`${path}/anomalies`} icon={<ReportProblemIcon />} primary="Anomalies" />
         <ListItemLink to={`${path}/types`} icon={<CategoryIcon />} primary="Types d'anomalies" />
+        <ListItemLink to={`${path}/settings/notifications`} icon={<NotificationsIcon />} primary="Notifications" />
       </List>
     </div>
   );
@@ -217,17 +220,23 @@ function Dashboard() {
         <div className={classes.toolbar} />
 
         <Container maxWidth="lg">
-          <Switch>
-            <Route path={`${path}/anomalies`}>
-              <Anomalies />
-            </Route>
+          <Suspense fallback={<div></div>}>
+            <Switch>
+              <Route path={`${path}/anomalies`}>
+                <Anomalies />
+              </Route>
 
-            <Route path={`${path}/types`}>
-              <Types />
-            </Route>
+              <Route path={`${path}/types`}>
+                <Types />
+              </Route>
+              
+              <Route path={`${path}/settings/notifications`}>
+                <Notifications />
+              </Route>
 
-            <Redirect from={path} to={`${path}/anomalies`} />
-          </Switch>
+              <Redirect from={path} to={`${path}/anomalies`} />
+            </Switch>
+          </Suspense>
         </Container>
       </main>
     </div>

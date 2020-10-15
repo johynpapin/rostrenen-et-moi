@@ -75,10 +75,9 @@ service cloud.firestore {
 				data.email is string;
 		}
 
-		match /notifications/{notificationId} {
-			allow list: if isAdmin();
-			allow create: if isAdmin() && isValidNotification();
-			allow delete: if isAdmin();
+		match /settings/notifications {
+			allow update: if isAdmin();
+			allow get: if isAdmin();
 		}
 	}
 }
