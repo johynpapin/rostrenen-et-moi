@@ -23,6 +23,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import CategoryIcon from '@material-ui/icons/Category';
+import PeopleIcon from '@material-ui/icons/People';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import MenuIcon from '@material-ui/icons/Menu';
 import NotificationsIcon from '@material-ui/icons/Notifications';
@@ -31,6 +32,7 @@ import Container from '@material-ui/core/Container';
 import { makeStyles } from '@material-ui/core/styles';
 import Anomalies from './Anomalies';
 import Types from './Types';
+import Users from './Users';
 import Notifications from './Notifications';
 
 const drawerWidth = 240;
@@ -173,6 +175,7 @@ function Dashboard() {
       <List>
         <ListItemLink to={`${path}/anomalies`} icon={<ReportProblemIcon />} primary="Anomalies" />
         <ListItemLink to={`${path}/types`} icon={<CategoryIcon />} primary="Types d'anomalies" />
+        <ListItemLink to={`${path}/users`} icon={<PeopleIcon />} primary="Utilisateurs" />
         <ListItemLink to={`${path}/settings/notifications`} icon={<NotificationsIcon />} primary="Notifications" />
       </List>
     </div>
@@ -228,6 +231,10 @@ function Dashboard() {
 
               <Route path={`${path}/types`}>
                 <Types />
+              </Route>
+              
+                <Route path={`${path}/users`}>
+                <Users />
               </Route>
               
               <Route path={`${path}/settings/notifications`}>
