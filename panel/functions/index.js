@@ -1,5 +1,5 @@
 const functions = require('firebase-functions')
-// const logger = require('firebase-functions/lib/logger')
+const logger = require('firebase-functions/lib/logger')
 const admin = require('firebase-admin')
 const { v4: uuidv4 } = require('uuid')
 const nodemailer = require('nodemailer')
@@ -44,7 +44,9 @@ exports.updateAnomalyImages = functions
 			const imageId = uuidv4() 
 			await file.move(storageBucket.file(`images/${anomaly.userId}/${imageId}`))
 
-			return imageId
+			return {
+        id: imageId
+      }
 		}))
 
     await snapshot.ref.update({
@@ -62,8 +64,11 @@ exports.sendEmailOnAnomalyCreated = functions
     const emailAddresses = notifications.emailAddresses
 
     if (!emailAddresses) {
+      logger.log('The list of email addresses is empty, nothing to do.')
       return
     }
+
+    logger.log(`Sending ${emailAddresses.length} emails.`)
 
     await Promise.all(emailAddresses.map(to => transporter.sendMail({
       from: config.email.from,

@@ -9,6 +9,8 @@ import 'package:rostrenen_et_moi/providers.dart';
 import 'package:rostrenen_et_moi/models/anomaly_type.dart';
 import 'dart:io';
 import 'package:uuid/uuid.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 class _AnomalyImage extends StatelessWidget {
   final File file;
@@ -97,6 +99,20 @@ class CreateAnomaly extends HookWidget {
     final anomalyImages = useState(List<_AnomalyImage>());
     final anomalyDescription = useState('');
 
+    final placemarkFuture = useMemoized(
+      () => () async {
+        final position = await getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
+        return await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+          localeIdentifier: 'fr_FR',
+        );
+      }(),
+    );
+    final placemark = useFuture(placemarkFuture);
+
     Future getImage() async {
       final pickedFile = await picker.getImage(source: ImageSource.camera);
       if (pickedFile == null) {
@@ -145,6 +161,30 @@ class CreateAnomaly extends HookWidget {
         child: ListView(
           padding: EdgeInsets.symmetric(horizontal: 10.0),
           children: <Widget>[
+            SizedBox(height: 20.0),
+            TextFormField(
+              enabled: false,
+              decoration: InputDecoration(
+                labelText: 'Adresse',
+                border: const OutlineInputBorder(),
+                suffixIcon: SizedBox(
+                  height: 48.0,
+                  width: 48.0,
+                  child: Center(
+                    child: SizedBox(
+                      height: 24.0,
+                      width: 24.0,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3.0,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.black38),
+                        value: null,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
             SizedBox(height: 20.0),
             DropdownButtonFormField(
               onChanged: (value) {
