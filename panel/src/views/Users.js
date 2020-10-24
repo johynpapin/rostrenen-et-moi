@@ -8,14 +8,24 @@ import TableCell from '@material-ui/core/TableCell';
 import TableBody from '@material-ui/core/TableBody';
 import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
-import { useFirestoreCollectionData, useFirestore } from 'reactfire';
+import Switch from '@material-ui/core/Switch';
+import { useUser, useFirestoreCollectionData, useFirestore } from 'reactfire';
 
 function Users() {
+  const currentUser = useUser()
   const usersRef = useFirestore()
     .collection('users');
   const users = useFirestoreCollectionData(usersRef, {
     idField: 'id'
   });
+
+  const handleIsAdminChange = async (user, event) => {
+    const isAdmin = event.target.checked;
+
+    await usersRef.doc(user.id).update({
+      isAdmin
+    })
+  };
 
   return (
     <div>
@@ -41,7 +51,12 @@ function Users() {
                 </TableCell> 
                 
                 <TableCell>
-                  {user.isAdmin ? 'Oui' : 'Non'}
+                  <Switch
+                    disabled={user.id === currentUser.uid}
+                    checked={user.isAdmin}
+                    onChange={event => handleIsAdminChange(user, event)}
+                    inputProps={{ 'aria-label': 'Est administrateur' }}
+                  />
                 </TableCell>
               </TableRow>
             ))}
