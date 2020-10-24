@@ -32,9 +32,10 @@ service cloud.firestore {
 		function isValidAnomaly() {
 			let data = request.resource.data;
 
-			return data.size() == 5 &&
+			return data.size() == 6 &&
 				data.userId is string &&
 				data.userId == request.auth.uid &&
+				data.address is string &&
 				data.createdAt is timestamp &&
 				data.createdAt == request.time &&
 				data.anomalyType is map &&

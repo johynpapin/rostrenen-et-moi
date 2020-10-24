@@ -29,6 +29,7 @@ function Anomalies() {
             <TableHead>
               <TableRow>
                 <TableCell>Type</TableCell>
+                <TableCell>Adresse</TableCell>
                 <TableCell>Description</TableCell>
               </TableRow>
             </TableHead>
@@ -39,6 +40,9 @@ function Anomalies() {
                 <TableCell component="th" scope="row">
                   {anomaly.anomalyType.name}
                 </TableCell> 
+                <TableCell>
+                  {anomaly.address}
+                </TableCell>
                 <TableCell>
                   {anomaly.description}
                 </TableCell>

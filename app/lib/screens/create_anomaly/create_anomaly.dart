@@ -84,6 +84,7 @@ class _AnomalyImage extends StatelessWidget {
 class CreateAnomaly extends HookWidget {
   @override
   Widget build(BuildContext context) {
+    final scaffoldKey = useMemoized(() => GlobalKey<ScaffoldState>());
     final formKey = useMemoized(() => GlobalKey<FormState>());
     final picker = useMemoized(() => ImagePicker());
     final uuid = useMemoized(() => Uuid());
@@ -95,9 +96,12 @@ class CreateAnomaly extends HookWidget {
     final firebaseStorage = useMemoized(() => FirebaseStorage.instance);
     final imagesUploadFolder = useMemoized(() => uuid.v4());
 
+    final anomalyAddress = useState<String>('');
     final anomalyTypeId = useState<String>(null);
     final anomalyImages = useState(List<_AnomalyImage>());
     final anomalyDescription = useState('');
+
+    final anomalyAddressController = useTextEditingController();
 
     final placemarkFuture = useMemoized(
       () => () async {
@@ -112,6 +116,33 @@ class CreateAnomaly extends HookWidget {
       }(),
     );
     final placemark = useFuture(placemarkFuture);
+    final theme = Theme.of(context);
+
+    useEffect(() {
+      if (placemark.hasData) {
+        final address = placemark.data[0].street;
+        anomalyAddressController.text = address;
+        anomalyAddress.value = address;
+      } else if (placemark.hasError) {
+        scaffoldKey.currentState.showSnackBar(
+          SnackBar(
+            backgroundColor: theme.errorColor,
+            content: Row(
+              children: [
+                Icon(
+                  Icons.error,
+                  color: Colors.white,
+                ),
+                SizedBox(width: 10.0),
+                Text('Nous n\'arrivons pas à lire votre position.'),
+              ],
+            ),
+          ),
+        );
+
+        return null;
+      }
+    }, [placemark]);
 
     Future getImage() async {
       final pickedFile = await picker.getImage(source: ImageSource.camera);
@@ -142,6 +173,7 @@ class CreateAnomaly extends HookWidget {
           .firstWhere((anomalyType) => anomalyType.id == anomalyTypeId.value);
 
       await dataService.createAnomaly(
+        address: anomalyAddress.value,
         anomalyType: anomalyType,
         description: anomalyDescription.value,
         imagesUploadFolder: imagesUploadFolder,
@@ -153,6 +185,7 @@ class CreateAnomaly extends HookWidget {
     }
 
     return Scaffold(
+      key: scaffoldKey,
       appBar: AppBar(
         title: Text('Nouvelle anomalie'),
       ),
@@ -160,31 +193,43 @@ class CreateAnomaly extends HookWidget {
         key: formKey,
         child: ListView(
           padding: EdgeInsets.symmetric(horizontal: 10.0),
-          children: <Widget>[
+          children: [
             SizedBox(height: 20.0),
-            TextFormField(
-              enabled: false,
-              decoration: InputDecoration(
-                labelText: 'Adresse',
-                border: const OutlineInputBorder(),
-                suffixIcon: SizedBox(
-                  height: 48.0,
-                  width: 48.0,
-                  child: Center(
-                    child: SizedBox(
-                      height: 24.0,
-                      width: 24.0,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3.0,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.black38),
-                        value: null,
+            if (placemark.hasData || placemark.hasError)
+              TextFormField(
+                controller: anomalyAddressController,
+                decoration: InputDecoration(
+                  labelText: 'Adresse',
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  anomalyAddress.value = value;
+                },
+              )
+            else
+              TextFormField(
+                enabled: false,
+                decoration: InputDecoration(
+                  labelText: 'Adresse',
+                  border: const OutlineInputBorder(),
+                  suffixIcon: SizedBox(
+                    height: 48.0,
+                    width: 48.0,
+                    child: Center(
+                      child: SizedBox(
+                        height: 24.0,
+                        width: 24.0,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3.0,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.black38),
+                          value: null,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
             SizedBox(height: 20.0),
             DropdownButtonFormField(
               onChanged: (value) {

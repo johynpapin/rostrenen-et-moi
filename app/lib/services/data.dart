@@ -41,23 +41,15 @@ class DataService {
   }
 
   Future<void> createAnomaly({
+    String address,
     AnomalyType anomalyType,
     String description,
     String imagesUploadFolder,
   }) async {
-    print({
-      'userId': this._userId,
-      'createdAt': FieldValue.serverTimestamp(),
-      'anomalyType': {
-        'id': anomalyType.id,
-        'name': anomalyType.name,
-      },
-      'description': description,
-      'imagesUploadFolder': imagesUploadFolder,
-    });
     await _anomaliesCollection.add({
       'userId': this._userId,
       'createdAt': FieldValue.serverTimestamp(),
+      'address': address,
       'anomalyType': {
         'id': anomalyType.id,
         'name': anomalyType.name,
